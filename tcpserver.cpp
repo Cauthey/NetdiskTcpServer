@@ -17,6 +17,8 @@ TcpServer::TcpServer(QWidget *parent)
 
     MyTcpServer::getInstance().listen(QHostAddress(m_strIP),m_usPort);
 
+    // 测试git提交代码
+
 
 }
 
