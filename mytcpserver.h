@@ -10,6 +10,10 @@ public:
     MyTcpServer();
 
     static MyTcpServer &getInstance();
+
+    void incomingConnection(qintptr socketDescriptor);
+
+
 };
 
 #endif // MYTCPSERVER_H

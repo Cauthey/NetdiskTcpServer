@@ -15,7 +15,7 @@ TcpServer::TcpServer(QWidget *parent)
 
     loadConfig();
 
-    MyTcpServer::getInstance().listen();
+    MyTcpServer::getInstance().listen(QHostAddress(m_strIP),m_usPort);
 
 
 }
