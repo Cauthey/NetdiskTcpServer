@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
 
     OpeDB::getInstance().init();
 
-//    TcpServer w;
-//    w.show();
+    TcpServer w;
+    w.show();
     return a.exec();
 }

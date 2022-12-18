@@ -38,5 +38,46 @@ void OpeDB::init()
 OpeDB::~OpeDB()
 {
     m_db.close();
+}
 
+bool OpeDB::handleRegist(const char *name, const char *pwd)
+{
+    if (NULL == name || NULL ==pwd){
+        return false;
+    }
+    QString data = QString("insert into userInfo(name,pwd) values(\'%1\',\'%2\')").arg(name).arg(pwd);
+    qDebug() << data ;
+    QSqlQuery query;
+    return query.exec(data);
+}
+
+bool OpeDB::handleLogin(const char *name, const char *pwd)
+{
+    if (NULL == name || NULL ==pwd){
+        return false;
+    }
+    QString data = QString("select * from userInfo where name = \'%1\' and pwd = \'%2\' and online = 0").arg(name).arg(pwd);
+    qDebug() << data ;
+    QSqlQuery query;
+    query.exec(data);
+    if(query.next()){
+        data = QString("update userInfo set online = 1 where name = \'%1\' ").arg(name);
+        qDebug() << data ;
+        QSqlQuery query;
+        query.exec(data);
+        return true;
+    }else{
+        return false;
+    }
+}
+
+void OpeDB::handleOffine(const char *name)
+{
+    if (NULL == name){
+        return ;
+    }
+    QString data = QString("update userInfo set online = 0 where name = \'%1\' ").arg(name);
+    qDebug() << data ;
+    QSqlQuery query;
+    query.exec(data);
 }

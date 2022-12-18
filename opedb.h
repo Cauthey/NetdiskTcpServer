@@ -15,6 +15,10 @@ public:
     void init();
     ~OpeDB();
 
+    bool handleRegist(const char *name,const char *pwd);
+    bool handleLogin(const char *name,const char *pwd);
+    void handleOffine(const char *name);
+
 signals:
 private:
     QSqlDatabase m_db;
