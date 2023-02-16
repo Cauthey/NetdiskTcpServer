@@ -19,9 +19,10 @@ OpeDB &OpeDB::getInstance()
 void OpeDB::init()
 {
     m_db.setHostName("localhost");
-    QString path = QDir::currentPath()+"/cloud.db";
+//    QString path = QDir::currentPath()+"/cloud.db";
 //    m_db.setDatabaseName(":/cloud.db");   // 相对路径不好使
-    m_db.setDatabaseName("D:\\front\\code\\QQQQ\\NetdiskTcpServer\\cloud.db");   // 绝对路径测试下
+//    m_db.setDatabaseName("D:\\front\\code\\QQQQ\\NetdiskTcpServer\\cloud.db");   // 绝对路径测试下
+    m_db.setDatabaseName("D:\\Code\\QT\\2.netDisk\\NetdiskTcpServer\\cloud.db");   // 绝对路径测试下
     if (m_db.open()){
         QSqlQuery query;
         query.exec("select * from userInfo");
@@ -80,4 +81,18 @@ void OpeDB::handleOffine(const char *name)
     qDebug() << data ;
     QSqlQuery query;
     query.exec(data);
+}
+
+QStringList OpeDB::handleAllOnline()
+{
+    QString data = QString("select name from userInfo  where online = 1");
+    qDebug() << data ;
+    QSqlQuery query;
+    query.exec(data);
+    QStringList result;
+    result.clear();
+    while(query.next()){
+        result.append(query.value(0).toString());
+    }
+    return result;
 }
