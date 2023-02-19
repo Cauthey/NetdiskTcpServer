@@ -96,3 +96,26 @@ QStringList OpeDB::handleAllOnline()
     }
     return result;
 }
+
+int OpeDB::handleSearchUser(const char *name)
+{
+    if(NULL==name){
+        return -1;
+    }
+    QString data = QString("select online from userInfo  where name =\'%1\'").arg(name);
+    QSqlQuery query;
+    query.exec(data);
+    if(query.next()){
+        int res = query.value(0).toInt();
+        if(1==res){
+            return 1;
+        }else if (0==res){
+            return 0;
+        }else{
+            return -1;
+        }
+    }else{
+        return -1;
+    }
+
+}

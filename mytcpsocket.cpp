@@ -66,21 +66,35 @@ void MyTcpSocket::recvMsg()
     case ENUM_MSG_TYPE_ALL_ONLINE_REQUEST:
     {
         QStringList res = OpeDB::getInstance().handleAllOnline();
-
         uint uiMsgLen = res.size()*32;
         PDU *respdu = mkPDU(uiMsgLen);
         respdu->uiMsgType=ENUM_MSG_TYPE_ALL_ONLINE_RESPOND;
         for(int i=0;i<res.size();i++){
-            memcpy((char*)respdu->caMsg+i*32
-                   ,res.at(i).toStdString().c_str()
-                   ,res.at(i).size());
+        memcpy((char*)respdu->caMsg+i*32
+                ,res.at(i).toStdString().c_str()
+                 ,res.at(i).size());
         }
         write((char*)respdu,respdu->uiPDULen);
         free(respdu);
         respdu=NULL;
+    }
+    case ENUM_MSG_TYPE_SEARCH_USER_REQUEST:
+    {
+        int res = OpeDB::getInstance().handleSearchUser(pdu->caData);
+        PDU *respdu = mkPDU(0);
+        respdu->uiMsgType = ENUM_MSG_TYPE_SEARCH_USER_RESPOND;
+        if(-1==res){
+            strcpy(respdu->caData,SEARCH_USR_NO);
+        }else if(1==res){
+            strcpy(respdu->caData,SEARCH_USR_ONLINE);
+        }else{
+            strcpy(respdu->caData,SEARCH_USR_OFFLINE);
+        }
+        write((char*)respdu,respdu->uiPDULen);
+        free(respdu);
+        respdu = NULL;
         break;
     }
-
     default:
         break;
     }

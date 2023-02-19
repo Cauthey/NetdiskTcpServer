@@ -21,6 +21,8 @@ public:
     void handleOffine(const char *name);
     QStringList handleAllOnline();
 
+    int handleSearchUser(const char *name);
+
 signals:
 private:
     QSqlDatabase m_db;
