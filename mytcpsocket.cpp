@@ -150,7 +150,7 @@ void MyTcpSocket::recvMsg()
     case ENUM_MSG_TYPE_FRIEND_FLUSH_REQUEST:
     {
         char caName[32] = {'\0'};
-        strncpy(caName,pdu->caData,32);
+        strncpy(,pdu->caData,32);
         QStringList res = OpeDB::getInstance().handFlushFriend(caName);
         uint uiMsgLen = res.size() *32 ;
         PDU *respdu = mkPDU(uiMsgLen);
