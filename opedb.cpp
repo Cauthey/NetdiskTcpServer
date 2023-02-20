@@ -119,3 +119,69 @@ int OpeDB::handleSearchUser(const char *name)
     }
 
 }
+
+int OpeDB::handAddFriend(const char *perName, const char *name)
+{
+    if(NULL==perName || name==NULL){
+        return -1;
+    }
+    QString data = QString("select * from friend where (id = select id from userInfo where name = \'%1\' and friendId = (select id from userInfo where name = \'%2\'))'))"
+                           " or (id = select id from userInfo where name = \'%3\' and friendId = (select id from userInfo where name = \'%4\'))')").arg(perName).arg(name).arg(name).arg(perName);
+    qDebug() << data;
+    QSqlQuery query;
+    query.exec(data);
+    if(query.next()){
+        return 0;  // 双方已是好友
+    }
+    else{
+        QString data = QString("select online from userInfo  where name =\'%1\'").arg(name);
+        QSqlQuery query;
+        query.exec(data);
+        if(query.next()){
+            int res = query.value(0).toInt();
+            if(1==res){
+                return 1;   // 在线
+            }else if (0==res){
+                return 2;   // 不在线
+            }else{
+                return 3;   // 不存在
+            }
+        }else{
+            return 3;
+        }
+    }
+
+
+}
+
+QStringList OpeDB::handFlushFriend(const char *name)
+{
+    QStringList strFriendList;
+    strFriendList.clear();
+    if(NULL==name){
+        return strFriendList;
+    }
+    QString data1= QString("select name from userInfo where online = 1 and id ="
+                          "(select id from friend where friendId = (select id from userInfo "
+                          "where name = \'%1\'))").arg(name);
+    qDebug() << data1;
+    QSqlQuery query1;
+    query1.exec(data1);
+    while(query1.next()){
+        strFriendList.append(query1.value(0).toString());
+        qDebug() << query1.value(0).toString();
+    }
+
+    QString data2 = QString("select name from userInfo where online = 1 and id ="
+                          "(select friendId from friend where id = (select id from userInfo "
+                          "where name = \'%1\'))").arg(name);
+    QSqlQuery query2;
+    qDebug() << data2;
+    query2.exec(data2);
+    while(query2.next()){
+        strFriendList.append(query2.value(0).toString());
+        qDebug() << query2.value(0).toString();
+    }
+    return strFriendList;
+}
+

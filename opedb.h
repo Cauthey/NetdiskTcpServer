@@ -23,6 +23,10 @@ public:
 
     int handleSearchUser(const char *name);
 
+    int handAddFriend(const char * perName,const char * name);
+
+    QStringList handFlushFriend(const char * name);
+
 signals:
 private:
     QSqlDatabase m_db;

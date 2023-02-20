@@ -1,5 +1,7 @@
 #include "mytcpsocket.h"
 #include <QDebug>
+#include<stdio.h>
+#include"mytcpserver.h"
 #include "protocol.h"
 
 MyTcpSocket::MyTcpSocket()
@@ -95,6 +97,72 @@ void MyTcpSocket::recvMsg()
         respdu = NULL;
         break;
     }
+    case ENUM_MSG_TYPE_ADD_FRIEND_REQUEST:
+    {
+        char caPerName[32] = {'\0'};
+        char caName[32] = {'\0'};
+        strncpy(caPerName,pdu->caData,32);
+        strncpy(caName,pdu->caData+32,32);
+        int res = OpeDB::getInstance().handAddFriend(caPerName,caName);
+        PDU *respdu = NULL;
+        if(-1==res){
+            respdu = mkPDU(0);
+            respdu->uiMsgType = ENUM_MSG_TYPE_ADD_FRIEND_REQUEST;
+            strcpy(respdu->caData,UNKNOWN_ERROR);
+            write((char*)respdu,respdu->uiPDULen);
+            free(respdu);
+            respdu = NULL;
+        }else if(0==res){
+            respdu = mkPDU(0);
+            respdu->uiMsgType = ENUM_MSG_TYPE_ADD_FRIEND_REQUEST;
+            strcpy(respdu->caData,FRIEND_EXISTS);
+            write((char*)respdu,respdu->uiPDULen);
+            free(respdu);
+            respdu = NULL;
+        }else if(1==res){
+            MyTcpServer::getInstance().resend(caPerName,pdu);
+
+
+        }else if(2==res){
+            respdu = mkPDU(0);
+            respdu->uiMsgType = ENUM_MSG_TYPE_ADD_FRIEND_REQUEST;
+            strcpy(respdu->caData,USER_OFFINE);
+            write((char*)respdu,respdu->uiPDULen);
+            free(respdu);
+            respdu = NULL;
+        }else if(3==res){
+            respdu = mkPDU(0);
+            respdu->uiMsgType = ENUM_MSG_TYPE_ADD_FRIEND_REQUEST;
+            strcpy(respdu->caData,USER_NOT_EXISTS);
+            write((char*)respdu,respdu->uiPDULen);
+            free(respdu);
+            respdu = NULL;
+        }else{
+            respdu = mkPDU(0);
+            respdu->uiMsgType = ENUM_MSG_TYPE_ADD_FRIEND_REQUEST;
+            strcpy(respdu->caData,UNKNOWN_ERROR);
+            write((char*)respdu,respdu->uiPDULen);
+            free(respdu);
+            respdu = NULL;
+        }
+        break;
+    }
+    case ENUM_MSG_TYPE_FRIEND_FLUSH_REQUEST:
+    {
+        char caName[32] = {'\0'};
+        strncpy(caName,pdu->caData,32);
+        QStringList res = OpeDB::getInstance().handFlushFriend(caName);
+        uint uiMsgLen = res.size() *32 ;
+        PDU *respdu = mkPDU(uiMsgLen);
+        respdu->uiMsgType = ENUM_MSG_TYPE_FRIEND_FLUSH_RESPOND;
+        for(int i=0;i<res.size();i++){
+            memcpy((char*)respdu->caMsg+i*32,res.at(i).toStdString().c_str(),res.size());
+        }
+        write((char*)respdu,respdu->uiPDULen);
+        free(respdu);
+        respdu = NULL;
+        break;
+    }
     default:
         break;
     }
@@ -111,9 +179,4 @@ void MyTcpSocket::clientOffine()
 {
     OpeDB::getInstance().handleOffine(m_strName.toStdString().c_str());
     emit offine(this);
-
-
-
-
-
 }
