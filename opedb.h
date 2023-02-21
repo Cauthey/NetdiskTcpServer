@@ -25,6 +25,10 @@ public:
 
     int handAddFriend(const char * perName,const char * name);
 
+    void handleAgreeAddFriend(const char * perName,const char * name);
+
+    bool handledelFriend(const char * name,const char * friendName);
+
     QStringList handFlushFriend(const char * name);
 
 signals:

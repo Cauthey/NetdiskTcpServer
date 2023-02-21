@@ -154,6 +154,35 @@ int OpeDB::handAddFriend(const char *perName, const char *name)
 
 }
 
+void OpeDB::handleAgreeAddFriend(const char *perName, const char *name)
+{
+    if(NULL==perName || NULL == name){
+        return ;
+    }
+    QString data = QString("insert into friend(id,friendId) values((select id from userInfo where name = \'%1\'),"
+                           "(select id from userInfo where name = \'%2\'));").arg(perName).arg(name);
+    QSqlQuery query;
+    query.exec(data);
+}
+
+bool OpeDB::handledelFriend(const char *name, const char *friendName)
+{
+    if(NULL==name || friendName == NULL )
+    {
+        return false;
+    }
+    QString data = QString("delete from friend where id = ((select id from userInfo where name = \'%1\') and "
+                           "friendId = (select id from userInfo where name = \'%2\'));").arg(name).arg(friendName);
+    QSqlQuery query;
+    query.exec(data);
+
+    data = QString("delete from friend where id = ((select id from userInfo where name = \'%1\') and "
+                            "friendId = (select id from userInfo where name = \'%2\'));").arg(friendName).arg(name);
+    query.exec(data);
+
+    return true;
+}
+
 QStringList OpeDB::handFlushFriend(const char *name)
 {
     QStringList strFriendList;
@@ -161,7 +190,7 @@ QStringList OpeDB::handFlushFriend(const char *name)
     if(NULL==name){
         return strFriendList;
     }
-    QString data1= QString("select name from userInfo where online = 1 and id ="
+    QString data1= QString("select name from userInfo where online = 1 and id in"
                           "(select id from friend where friendId = (select id from userInfo "
                           "where name = \'%1\'))").arg(name);
     qDebug() << data1;
@@ -172,7 +201,7 @@ QStringList OpeDB::handFlushFriend(const char *name)
         qDebug() << query1.value(0).toString();
     }
 
-    QString data2 = QString("select name from userInfo where online = 1 and id ="
+    QString data2 = QString("select name from userInfo where online = 1 and id in"
                           "(select friendId from friend where id = (select id from userInfo "
                           "where name = \'%1\'))").arg(name);
     QSqlQuery query2;
