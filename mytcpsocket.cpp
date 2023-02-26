@@ -347,7 +347,52 @@ void MyTcpSocket::recvMsg()
         respdu = NULL;
         break;
     }
+    case ENUM_MSG_TYPE_ENTER_DIR_REQUEST:
+    {
+        char caEnterName[32]={'\0'};
+        strncpy(caEnterName,pdu->caData,32);
 
+        char *pPath = new char[pdu->uiMsgLen];
+        memcpy(pPath,pdu->caMsg,pdu->uiMsgLen);
+
+        QString strPath = QString("%1/%2").arg(pPath).arg(caEnterName);
+
+        qDebug() << strPath;
+
+        QFileInfo fileInfo(strPath);
+
+        PDU *respdu = NULL;
+        if(fileInfo.isDir()){
+            QDir dir(strPath);
+            QFileInfoList fileList =  dir.entryInfoList();
+            int iFileCount = fileList.size();
+            respdu = mkPDU(sizeof(FileInfo)*iFileCount);
+            respdu->uiMsgType = ENUM_MSG_TYPE_FLUSH_FILE_RESPOND;
+            FileInfo *pFileInfo = NULL;
+            QString strFileName;
+            for(int i=0;i<iFileCount;i++)
+            {
+                pFileInfo = (FileInfo*)(respdu->caMsg) + i;
+                strFileName = fileList[i].fileName();
+                qDebug() << strFileName;
+                strncpy(pFileInfo->caName,strFileName.toStdString().c_str(),strFileName.size());
+                if(fileList[i].isDir()){
+                    pFileInfo->iFileType = 0;
+                }
+                else if(fileList[i].isFile()){
+                    pFileInfo->iFileType = 1;
+                }
+            }
+        }else if(fileInfo.isFile()){
+            respdu = mkPDU(0);
+            respdu->uiMsgType = ENUM_MSG_TYPE_ENTER_DIR_RESPOND;
+            strcpy(respdu->caData,ENTER_DIR_FAILED);
+        }
+        write((char*)respdu,respdu->uiPDULen);
+        free(respdu);
+        respdu = NULL;
+        break;
+    }
     default:
         break;
     }
