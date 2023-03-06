@@ -4,6 +4,8 @@
 #include <QTcpSocket>
 #include "protocol.h"
 #include "opedb.h"
+#include<QDir>
+#include<QFile>
 
 class MyTcpSocket : public QTcpSocket
 {
@@ -19,6 +21,11 @@ public slots:
     void clientOffine();  // 客户端下线
 private:
     QString m_strName;
+
+    QFile m_file;
+    qint64 m_iTotal;
+    qint64 m_iRecived;
+    bool m_bUpload;
 };
 
 #endif // MYTCPSOCKET_H
