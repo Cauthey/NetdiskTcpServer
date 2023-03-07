@@ -6,6 +6,7 @@
 #include "opedb.h"
 #include<QDir>
 #include<QFile>
+#include<QTimer>
 
 class MyTcpSocket : public QTcpSocket
 {
@@ -19,6 +20,9 @@ signals:
 public slots:
     void recvMsg();
     void clientOffine();  // 客户端下线
+
+    void sendFileToClient();
+
 private:
     QString m_strName;
 
@@ -26,6 +30,8 @@ private:
     qint64 m_iTotal;
     qint64 m_iRecived;
     bool m_bUpload;
+
+    QTimer *m_pTimer;
 };
 
 #endif // MYTCPSOCKET_H

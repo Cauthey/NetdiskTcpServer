@@ -9,9 +9,13 @@
 MyTcpSocket::MyTcpSocket()
 {
     m_bUpload = false;
+    m_pTimer = new QTimer;
+
 
     connect(this,SIGNAL(readyRead()),this,SLOT(recvMsg()));
     connect(this,SIGNAL(disconnected()),this,SLOT(clientOffine()));
+    connect(m_pTimer,SIGNAL(timeout()),this,SLOT(sendFileToClient()));
+
 }
 
 QString MyTcpSocket::getName()
@@ -438,7 +442,7 @@ void MyTcpSocket::recvMsg()
             char *pPath = new char[pdu->uiMsgLen];
             memcpy(pPath,pdu->caMsg,pdu->uiMsgLen);
             QString strPath = QString("%1/%2").arg(pPath).arg(caFileName);
-            qDebug()<< strPath;
+            qDebug()<<"strPath : " << strPath;
             delete []pPath;
             pPath = NULL;
 
@@ -452,6 +456,33 @@ void MyTcpSocket::recvMsg()
             }
             break;
         }
+        case ENUM_MSG_TYPE_DOWNLOAD_FILE_REQUEST:
+        {
+            char caFileName[32] = {'\0'};
+            strcpy(caFileName,pdu->caData);
+            char *pPath = new char[pdu->uiMsgLen];
+            memcpy(pPath,pdu->caMsg,pdu->uiMsgLen);
+            QString strPath = QString("%1/%2").arg(pPath).arg(caFileName);
+            qDebug()<<"strPath : " << strPath;
+            delete []pPath;
+            pPath = NULL;
+
+            QFileInfo fileInfo(strPath);
+            qint64 fileSize = fileInfo.size();
+
+            PDU *respdu=mkPDU(0);
+            respdu->uiMsgType = ENUM_MSG_TYPE_DOWNLOAD_FILE_RESPOND;
+            sprintf(respdu->caData,"%s %lld",caFileName,fileSize);
+
+            write((char*)respdu,respdu->uiPDULen);
+            free(respdu);
+            respdu = NULL;
+
+            m_file.setFileName(strPath);
+            m_file.open(QIODevice::ReadOnly);
+            m_pTimer->start(1000);
+            break;
+        }
         default:
             break;
         }
@@ -459,9 +490,28 @@ void MyTcpSocket::recvMsg()
         pdu = NULL;
     }else{
         // 接收数据
+        qDebug() << "上传文件------------>1" ;
+        PDU *respdu = mkPDU(0);
+        respdu->uiMsgType = ENUM_MSG_TYPE_UPLOAD_FILE_RESPOND;
+        QByteArray buff = readAll();
+        m_file.write(buff);
+        m_iRecived+=buff.size();
+        qDebug() << "上传文件------------>2" << m_iRecived ;
+        if(m_iTotal == m_iRecived){
+            strcpy(respdu->caData,UPLOAD_FILE_SUCCESS);
+            write((char*)respdu,respdu->uiPDULen);
+            free(respdu);
+            respdu=NULL;
 
-
-
+        }else if(m_iTotal < m_iRecived){
+            m_file.close();
+            m_bUpload = false;
+            strcpy(respdu->caData,UPLOAD_FILE_FAILED);
+            write((char*)respdu,respdu->uiPDULen);
+            free(respdu);
+            respdu=NULL;
+        }
+        qDebug() << "上传文件------------>2" << m_iRecived ;
     }
 }
 
@@ -469,4 +519,27 @@ void MyTcpSocket::clientOffine()
 {
     OpeDB::getInstance().handleOffine(m_strName.toStdString().c_str());
     emit offine(this);
+}
+
+void MyTcpSocket::sendFileToClient()
+{
+    m_pTimer->stop();
+    char *pData = new char[4096];
+    qint64 ret = 0;
+    while(true){
+
+        ret = m_file.read(pData,4096);
+        if(ret > 0 && ret <=4096){
+            write(pData,ret);
+        }else if(0==ret){
+            m_file.close();
+            break;
+        }else if(ret<0){
+            qDebug() << "发送文件给客户端失败!";
+            m_file.close();
+            break;
+        }
+    }
+    delete []pData;
+    pData =0;
 }
