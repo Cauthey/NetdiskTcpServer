@@ -1,4 +1,4 @@
-#ifndef OPEDB_H
+﻿#ifndef OPEDB_H
 #define OPEDB_H
 
 #include <QObject>
@@ -20,6 +20,8 @@ public:
     bool handleLogin(const char *name,const char *pwd);
     void handleOffine(const char *name);
     QStringList handleAllOnline();
+
+    void handleFirstBootOffine();
 
     int handleSearchUser(const char *name);
 

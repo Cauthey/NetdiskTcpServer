@@ -1,4 +1,4 @@
-#include "opedb.h"
+﻿#include "opedb.h"
 #include<QMessageBox>
 #include<QDebug>
 #include<QDir>
@@ -7,7 +7,6 @@
 OpeDB::OpeDB(QObject *parent) : QObject(parent)
 {
     m_db = QSqlDatabase::addDatabase("QSQLITE");
-
 }
 
 OpeDB &OpeDB::getInstance()
@@ -30,6 +29,7 @@ void OpeDB::init()
             QString data = QString("%1,%2,%3").arg(query.value(0).toString()).arg(query.value(1).toString().arg(query.value(2).toString()));
             qDebug() << data;
         }
+        handleFirstBootOffine();
     }else{
         QMessageBox::critical(NULL,"打开数据库","打开数据库失败");
     }
@@ -95,6 +95,13 @@ QStringList OpeDB::handleAllOnline()
         result.append(query.value(0).toString());
     }
     return result;
+}
+
+void OpeDB::handleFirstBootOffine()
+{
+    QString data = QString("update userInfo set online = 0 where 1=1");
+    QSqlQuery query;
+    query.exec(data);
 }
 
 int OpeDB::handleSearchUser(const char *name)

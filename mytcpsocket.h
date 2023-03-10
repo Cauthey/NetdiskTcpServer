@@ -1,4 +1,4 @@
-#ifndef MYTCPSOCKET_H
+﻿#ifndef MYTCPSOCKET_H
 #define MYTCPSOCKET_H
 
 #include <QTcpSocket>
@@ -14,6 +14,7 @@ class MyTcpSocket : public QTcpSocket
 public:
     MyTcpSocket();
     QString getName();
+    void copyDir(QString strSrcDir,QString strDesDir);
 signals:
     void offine(MyTcpSocket *mySocket);
 
