@@ -106,6 +106,27 @@ void MyTcpSocket::recvMsg()
             break;
 
         }
+        case ENUM_MSG_TYPE_DELETEUSER_REQUEST:
+        {
+            char caName[32] = {'\0'};
+            char caPwd[32] = {'\0'};
+            strncpy(caName,pdu->caData,32);
+            strncpy(caPwd,pdu->caData+32,32);
+            bool ret = OpeDB::getInstance().handleDeleteUser(caName,caPwd);
+            PDU *respdu  =  mkPDU(0);
+            respdu->uiMsgType = ENUM_MSG_TYPE_DELETEUSER_RESPOND;
+            if (ret){
+                strcpy(respdu->caData,DELETEUSER_SUCCESS);
+                m_strName = caName;
+            }else{
+                strcpy(respdu->caData,DELETEUSER_FAILED);
+            }
+            write((char*)respdu,respdu->uiPDULen);
+            free(respdu);
+            respdu = NULL;
+            break;
+
+        }
         case ENUM_MSG_TYPE_ALL_ONLINE_REQUEST:
         {
             QStringList res = OpeDB::getInstance().handleAllOnline();

@@ -83,6 +83,31 @@ void OpeDB::handleOffine(const char *name)
     query.exec(data);
 }
 
+bool OpeDB::handleDeleteUser(const char *name,const char *pwd)
+{
+    if (NULL == name || NULL ==pwd){
+        return false;
+    }
+    QString data = QString("select * from userInfo where name = \'%1\' and pwd = \'%2\' and online = 0").arg(name).arg(pwd);
+    qDebug() << data ;
+    QSqlQuery query;
+    query.exec(data);
+    if(query.next()){
+        data = QString("delete from friend where id = (select id from userInfo where name = \'%1\')"
+                       "or friendId = (select id from userInfo where name = \'%2\')").arg(name).arg(name);
+        qDebug() << data ;
+        query.exec(data);
+
+        data = QString("delete from userInfo where name = \'%1\' ").arg(name);
+        qDebug() << data ;
+        query.exec(data);
+
+    }else{
+        return false;
+    }
+    return true;
+}
+
 QStringList OpeDB::handleAllOnline()
 {
     QString data = QString("select name from userInfo  where online = 1");

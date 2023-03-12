@@ -19,11 +19,15 @@ public:
     bool handleRegist(const char *name,const char *pwd);
     bool handleLogin(const char *name,const char *pwd);
     void handleOffine(const char *name);
+
+    bool handleDeleteUser(const char *name,const char *pwd);
+
     QStringList handleAllOnline();
 
     void handleFirstBootOffine();
 
     int handleSearchUser(const char *name);
+
 
     int handAddFriend(const char * perName,const char * name);
 
@@ -32,6 +36,8 @@ public:
     bool handledelFriend(const char * name,const char * friendName);
 
     QStringList handFlushFriend(const char * name);
+
+
 
 signals:
 private:

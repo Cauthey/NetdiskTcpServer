@@ -10,6 +10,9 @@ typedef unsigned int uint;
 #define LOGIN_SUCCESS "login success"
 #define LOGIN_FAILED "login failed : name or password error or relogin"
 
+#define DELETEUSER_SUCCESS "Deleteuser success"
+#define DELETEUSER_FAILED "Deleteuser failed : name or password error"
+
 #define SEARCH_USR_NO "no such people!"
 #define SEARCH_USR_ONLINE "online!"
 #define SEARCH_USR_OFFLINE "offine!"
@@ -53,6 +56,10 @@ enum ENUM_MSG_TYPE{
     ENUM_MSG_TYPE_REGIST_RESPOND,   // 注册回复
     ENUM_MSG_TYPE_LOGIN_REQUEST,   // 登录回复
     ENUM_MSG_TYPE_LOGIN_RESPOND,   // 登录回复
+
+    ENUM_MSG_TYPE_DELETEUSER_REQUEST,   // 注销回复
+    ENUM_MSG_TYPE_DELETEUSER_RESPOND,   // 注销回复
+
     ENUM_MSG_TYPE_ALL_ONLINE_REQUEST,   // 请求所有在线用户
     ENUM_MSG_TYPE_ALL_ONLINE_RESPOND,   // 请求所有在线用户的回复
 
