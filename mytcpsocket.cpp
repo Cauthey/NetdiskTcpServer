@@ -558,6 +558,58 @@ void MyTcpSocket::recvMsg()
 
             break;
         }
+        case ENUM_MSG_TYPE_MOVE_FILE_REQUEST:
+        {
+            char caFileName[32] = {'\0'};
+            int srcLen = 0;
+            int destLen = 0;
+            sscanf(pdu->caData,"%d %d %s",&srcLen,&destLen,caFileName);
+
+            qDebug()  << "srcLen:" << srcLen
+                      << "destLen:" << destLen
+                      << "caFileName:" <<caFileName;
+
+
+            char *pSrcPath = new char[srcLen+1];
+            char *pDestPath = new char[destLen+1+32];
+
+            memset(pSrcPath,'\0',srcLen+1);
+            memset(pDestPath,'\0',destLen+1+32);
+
+            memcpy(pSrcPath,pdu->caMsg,srcLen);
+            memcpy(pDestPath,(char*)(pdu->caMsg)+(srcLen+1),destLen);
+
+
+            PDU *respdu = mkPDU(0);
+            respdu->uiMsgType = ENUM_MSG_TYPE_MOVE_FILE_RESPOND;
+
+
+            QFileInfo fileInfo(pDestPath);
+            if(fileInfo.isDir()){
+                strcat(pDestPath,"/");
+                strcat(pDestPath,caFileName);
+
+                bool ret = QFile::rename(pSrcPath,pDestPath);
+                qDebug() << "pSrcPath:" << pSrcPath
+                         << "pDestPath:" << pDestPath;
+                if(ret){
+                    strcpy(respdu->caData,MOVE_FILE_SUCCESS);
+                }else{
+                    strcpy(respdu->caData,MOVE_FILE_ERROR);
+                }
+
+            }else if(fileInfo.isFile()){
+                strcpy(respdu->caData,MOVE_FILE_FAILED);
+            }else{
+                strcpy(respdu->caData,MOVE_FILE_ERROR);
+            }
+
+            write((char*)respdu,respdu->uiPDULen);
+            free(respdu);
+            respdu = NULL;
+
+            break;
+        }
         default:
             break;
         }
