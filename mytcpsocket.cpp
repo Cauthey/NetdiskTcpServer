@@ -113,6 +113,12 @@ void MyTcpSocket::recvMsg()
             strncpy(caName,pdu->caData,32);
             strncpy(caPwd,pdu->caData+32,32);
             bool ret = OpeDB::getInstance().handleDeleteUser(caName,caPwd);
+            QFileInfo fileInfo(caName);
+            if(fileInfo.isDir()){
+                QDir dir;
+                dir.setPath(caName);
+                dir.removeRecursively();
+            }
             PDU *respdu  =  mkPDU(0);
             respdu->uiMsgType = ENUM_MSG_TYPE_DELETEUSER_RESPOND;
             if (ret){
